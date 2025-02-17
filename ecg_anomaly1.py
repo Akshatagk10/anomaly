@@ -65,12 +65,21 @@ if df is not None:
     min_val, max_val = np.min(train_data), np.max(train_data)
     train_data = (train_data - min_val) / (max_val - min_val)
     test_data = (test_data - min_val) / (max_val - min_val)
+    
+    # Ensure correct data type (float32)
     train_data, test_data = map(lambda x: tf.cast(x, dtype=tf.float32), [train_data, test_data])
     train_labels, test_labels = train_labels.astype(bool), test_labels.astype(bool)
+
+    # Separate normal and anomalous data
     n_train_data, n_test_data = train_data[train_labels], test_data[test_labels]
     an_train_data, an_test_data = train_data[~train_labels], test_data[~test_labels]
+
+    # Load and train the autoencoder model
     autoencoder = load_model()
-    autoencoder.fit(n_train_data, n_train_data, epochs=20, batch_size=512, validation_data=(n_test_data, n_test_data))
+
+    # Train model with explicit casting
+    autoencoder.fit(n_train_data, n_train_data, epochs=20, batch_size=64, validation_data=(n_test_data, n_test_data))
+
 else:
     st.warning("No ECG data available. Please upload a dataset.")
 
@@ -118,14 +127,17 @@ if df is not None:
     reconstructed = autoencoder(n_train_data)
     train_loss = losses.mae(reconstructed, n_train_data)
     threshold = np.mean(train_loss) + 2 * np.std(train_loss)
+
     def prediction(model, data, threshold):
         rec = model(data)
         loss = losses.mae(rec, data)
         return tf.math.less(loss, threshold)
+
     if use_lime:
         plot_with_lime(n_test_data, ecg_index)
     else:
         plot(n_test_data, ecg_index)
+
     if st.sidebar.button("Make Predictions"):
         pred = prediction(autoencoder, n_test_data, threshold)
         acc = np.sum(pred.numpy()) / len(pred.numpy()) * 100
