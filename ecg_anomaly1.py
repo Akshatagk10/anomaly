@@ -112,7 +112,11 @@ def plot_with_lime(data, index):
     ax.plot(dec_img[index], 'r', label='Reconstruction')
     ax.fill_between(np.arange(140), data[index], dec_img[index], color='lightcoral', alpha=0.5, label='Error')
     ax.legend()
-    exp = explainer.explain_instance(data[index].numpy(), autoencoder.predict)
+
+    # Modify for LIME - Convert to numpy and pass to explain_instance
+    data_instance = data[index].numpy().reshape(1, -1)  # Ensure it is 2D (1 sample, n features)
+    exp = explainer.explain_instance(data_instance.flatten(), lambda x: autoencoder.predict(tf.convert_to_tensor(x)).numpy())
+    
     lime_fig = exp.as_pyplot_figure()
     st.pyplot(fig)
     st.pyplot(lime_fig)
