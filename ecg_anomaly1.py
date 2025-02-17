@@ -115,8 +115,16 @@ def plot_with_lime(data, index):
 
     # Modify for LIME - Convert to numpy and pass to explain_instance
     data_instance = data[index].numpy().reshape(1, -1)  # Ensure it is 2D (1 sample, n features)
-    exp = explainer.explain_instance(data_instance.flatten(), lambda x: autoencoder.predict(tf.convert_to_tensor(x)).numpy())
     
+    # Lambda function for model predictions that returns a NumPy array (not a TensorFlow tensor)
+    def model_predict(input_data):
+        input_data = tf.convert_to_tensor(input_data, dtype=tf.float32)
+        return autoencoder.predict(input_data).reshape(-1, 140)  # Ensure correct shape for LIME
+
+    # Explain the instance using the LIME explainer
+    exp = explainer.explain_instance(data_instance.flatten(), model_predict)
+    
+    # Get LIME explanation plot and display
     lime_fig = exp.as_pyplot_figure()
     st.pyplot(fig)
     st.pyplot(lime_fig)
