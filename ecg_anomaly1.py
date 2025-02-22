@@ -150,7 +150,7 @@ if df is not None:
     else:
         plot(n_test_data, ecg_index)
 
-    if st.sidebar.button("Make Predictions"):
-        pred = prediction(autoencoder, n_test_data, threshold)
-        acc = np.sum(pred.numpy()) / len(pred.numpy()) * 100
-        st.sidebar.write(f"Anomaly Detection Accuracy: {acc:.2f}%")
+    # if st.sidebar.button("Make Predictions"):
+    #     pred = prediction(autoencoder, n_test_data, threshold)
+    #     acc = np.sum(pred.numpy()) / len(pred.numpy()) * 100
+    #     st.sidebar.write(f"Anomaly Detection Accuracy: {acc:.2f}%")
